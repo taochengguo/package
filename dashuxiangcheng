@@ -1,0 +1,276 @@
+#include "stdlib.h"
+#include "stdio.h"
+#include "string.h"
+#define MAXSIZE 100
+typedef struct node
+{
+	int data[MAXSIZE];
+	int top;
+}SeqStack,*PSeqStack;
+PSeqStack Init_SeqStack(char *ch)
+{
+	PSeqStack S;
+	int i=0;
+	char *head;
+	S=(PSeqStack)malloc(sizeof(SeqStack));
+	if(S)
+		S->top=-1;
+	head=ch;
+	while(*ch!='\0')
+	{
+		if(*head=='-')
+			S->data[i]=(*(++ch)-'0')*(-1);
+		else
+			S->data[i]=*ch-'0';
+		ch++;
+		S->top++;
+		i++;
+	}
+	return S;
+}
+
+int Empty_SeqStack(PSeqStack S)
+{
+	if(S->top==-1)
+		return 1;
+	else
+		return 0;
+}
+
+int Push_SeqStack(PSeqStack S,int x)
+{
+	if(S->top==MAXSIZE-1)
+		return 0;
+	else
+	{
+		S->top++;
+		S->data[S->top]=x;
+		return 1;
+	}
+}
+
+int Pop_SeqStack(PSeqStack S,int *x)
+{
+	if(Empty_SeqStack(S))
+		return 0;
+	else
+	{
+		*x=S->data[S->top];
+		S->top--;
+		return 1;
+	}
+}
+
+int GetTop_SeqStack(PSeqStack S,int *x)
+{
+	if(S->top==-1)
+		return 0;
+	else
+	{
+		*x=S->data[S->top];
+		return 1;
+	}
+}
+
+void Destroy_SeqStack(PSeqStack *S)
+{
+	if(*S)
+		free(*S);
+	*S=NULL;
+	return;
+}
+
+void print(PSeqStack S)
+{
+	int i;
+	for(i=0;i<=S->top;i++)
+		printf("%d",S->data[i]);
+}
+PSeqStack Cover_SeqStack(PSeqStack A)
+{
+	int x;
+	PSeqStack C;
+	C=(PSeqStack)malloc(sizeof(SeqStack));
+	if(C)
+		C->top=-1;
+	while(!Empty_SeqStack(A))
+	{
+		Pop_SeqStack(A,&x);
+		Push_SeqStack(C,x);
+	}
+	return C;
+}
+
+PSeqStack Add(PSeqStack S1,PSeqStack S2)
+{
+	PSeqStack S;
+	int d=0,a,b,re;
+	S=(PSeqStack)malloc(sizeof(SeqStack));
+	if(S)
+		S->top=-1;
+	while(!Empty_SeqStack(S1)&&!Empty_SeqStack(S2))
+	{
+		Pop_SeqStack(S1,&a);
+		Pop_SeqStack(S2,&b);
+		re=(a+b)%10+d;
+		if(re/10==0)
+		{
+			Push_SeqStack(S,re);
+			d=(a+b)/10;
+		}
+		else if(re/10>0)
+		{
+			Push_SeqStack(S,re%10);
+			d=(a+b)/10+re/10;
+		}
+	}
+	while(!Empty_SeqStack(S1))
+	{
+		Pop_SeqStack(S1,&a);
+		re=a%10+d;
+		if(re/10==0)
+		{
+			Push_SeqStack(S,re);
+			d=a/10;
+		}
+		else
+		{
+			Push_SeqStack(S,re%10);
+			d=a/10+re/10;
+		}
+	}
+	while(!Empty_SeqStack(S2))
+	{
+		Pop_SeqStack(S2,&a);
+		re=a%10+d;
+		if(re/10==0)
+		{
+			Push_SeqStack(S,re);
+			d=a/10;
+		}
+		else
+		{
+			Push_SeqStack(S,re%10);
+			d=a/10+re/10;
+		}
+	}
+	if(d!=0)
+		Push_SeqStack(S,1);
+	S=Cover_SeqStack(S);
+	return S;
+	
+}
+
+PSeqStack Crol(PSeqStack S,int n)
+{
+	int i;
+	for(i=0;i<n;i++)
+		Push_SeqStack(S,0);
+	return S;
+}
+
+void Copy_SeqStack(PSeqStack A,PSeqStack B)
+{
+	PSeqStack C;
+	int x;
+	C=(PSeqStack)malloc(sizeof(SeqStack));
+	if(C)
+		C->top=-1;
+	while(!Empty_SeqStack(A))
+	{
+		Pop_SeqStack(A,&x);
+		Push_SeqStack(C,x);
+	}
+	while(!Empty_SeqStack(B))
+	{
+		Pop_SeqStack(B,&x);
+	}
+	while(!Empty_SeqStack(C))
+	{
+		Pop_SeqStack(C,&x);
+		Push_SeqStack(A,x);
+		Push_SeqStack(B,x);
+	}
+}
+
+PSeqStack Multiply(PSeqStack S1,PSeqStack S2)
+{
+	PSeqStack S,A,B;
+	int a,b,c,d=0,re,i,count=0;	
+	S=(PSeqStack)malloc(sizeof(SeqStack));
+	if(S)
+		S->top=-1;
+	A=(PSeqStack)malloc(sizeof(SeqStack));
+	if(A)
+		A->top=-1;
+	B=(PSeqStack)malloc(sizeof(SeqStack));
+	if(B)
+		B->top=-1;
+	while(!Empty_SeqStack(S1))
+	{
+		Pop_SeqStack(S1,&a);
+		d=0;
+		for(i=S2->top;i>-1;i--)
+		{
+			b=S2->data[i];
+			re=a*b%10+d;
+			if(re/10==0)
+			{
+				Push_SeqStack(S,re);
+				d=a*b/10;
+			}
+			else if(re/10>0)
+			{
+				Push_SeqStack(S,re%10);
+				d=a*b/10+re/10;
+			}
+		}
+		if(d!=0)
+			Push_SeqStack(S,d);
+		S=Cover_SeqStack(S);
+		if(count==0)
+		{
+			Copy_SeqStack(S,A);
+		}
+		else
+		{
+			B=Crol(S,count);
+			A=Add(A,B);
+			
+		}
+		count++;
+		Destroy_SeqStack(&S);
+		S=(PSeqStack)malloc(sizeof(SeqStack));
+		if(S)
+			S->top=-1;
+	}
+	A=Cover_SeqStack(A);
+	while(GetTop_SeqStack(A,&c)&&c==0)
+		Pop_SeqStack(A,&c);
+	if(Empty_SeqStack(A))
+		Push_SeqStack(A,0);
+	A=Cover_SeqStack(A);
+	return A;
+}
+void main()
+{
+	PSeqStack A,B,C;
+	int i;
+	char ch1[50],ch2[50];
+	printf("请输入第一个大数：");
+	gets(ch1);
+    printf("\n请输入第二个大数：");
+	gets(ch2);
+	A=Init_SeqStack(ch1);
+	print(A);
+	printf("*");
+	B=Init_SeqStack(ch2);
+	print(B);
+	printf("=");
+	C=Multiply(A,B);
+	for(i=0;i<=C->top;i++)
+	{
+		printf("%d",C->data[i]);
+	}
+	printf("\n");
+}
